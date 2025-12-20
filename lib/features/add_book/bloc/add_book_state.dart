@@ -1,0 +1,23 @@
+import 'package:equatable/equatable.dart';
+
+abstract class AddBookState extends Equatable {
+  const AddBookState();
+  
+  @override
+  List<Object> get props => [];
+}
+
+class AddBookInitial extends AddBookState {}
+
+class AddBookLoading extends AddBookState {}
+
+class AddBookSuccess extends AddBookState {}
+
+class AddBookFailure extends AddBookState {
+  final String error;
+
+  const AddBookFailure(this.error);
+
+  @override
+  List<Object> get props => [error];
+}

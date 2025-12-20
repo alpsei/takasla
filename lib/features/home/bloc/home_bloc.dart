@@ -1,0 +1,184 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kitaptakas/data/repositories/auth_repository.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../data/repositories/book_repository.dart';
+import 'home_event.dart';
+import 'home_state.dart';
+
+class HomeBloc extends Bloc<HomeEvent, HomeState> {
+  final BookRepository _bookRepository;
+  final AuthRepository _authRepository;
+
+  HomeBloc({
+    required BookRepository bookRepository,
+    required AuthRepository authRepository,
+  }) : _bookRepository = bookRepository,
+       _authRepository = authRepository,
+       super(HomeInitial()) {
+    // 1. Kitapları Getir
+    on<HomeBooksRequested>((event, emit) async {
+      emit(HomeLoading());
+      try {
+        final books = await _bookRepository.getBooks();
+        // İlk açılışta filtreler boş
+        emit(HomeSuccess(books: books, allBooks: books));
+      } catch (e) {
+        emit(HomeFailure(e.toString()));
+      }
+    });
+
+    // 2. Arama Yap
+    on<HomeSearchQueryChanged>((event, emit) async {
+      if (state is HomeSuccess) {
+        final currentState = state as HomeSuccess;
+
+        // A. Eğer Kullanıcı Arıyorsak (Async)
+        if (currentState.isUserSearchMode) {
+          // Önce state'i güncelle (yazıyı kaydet)
+          emit(currentState.copyWith(activeSearchQuery: event.query));
+
+          if (event.query.trim().isNotEmpty) {
+            try {
+              // Repo'dan kullanıcı ara
+              final users = await _authRepository.searchUsers(event.query);
+              // Sonuçları bas
+              emit((state as HomeSuccess).copyWith(userResults: users));
+            } catch (e) {
+              // Hata olursa boş liste dön (veya hata göster)
+              print("Kullanıcı arama hatası: $e");
+            }
+          } else {
+            // Yazı boşsa listeyi temizle
+            emit((state as HomeSuccess).copyWith(userResults: []));
+          }
+        }
+        // B. Eğer Kitap Arıyorsak (Sync - Filtreleme)
+        else {
+          final newState = currentState.copyWith(
+            activeSearchQuery: event.query,
+          );
+          _applyFilters(emit, newState);
+        }
+      }
+    });
+    on<HomeSearchModeChanged>((event, emit) {
+      if (state is HomeSuccess) {
+        final currentState = state as HomeSuccess;
+
+        // 1. Önce geçmek istediğimiz YENİ durumu bir değişkene hazırlayalım
+        // (Burada isUserSearchMode güncelleniyor)
+        final targetState = currentState.copyWith(
+          isUserSearchMode: event.isUserSearch,
+          userResults: [],
+          activeSearchQuery: '',
+        );
+
+        if (event.isUserSearch) {
+          // A. Kullanıcı Moduna geçiyorsak direkt yayınla
+          emit(targetState);
+        } else {
+          // B. Kitap Moduna dönüyorsak
+          // 🔥 HATA BURADAYDI: Eskiden 'currentState' gönderiyorduk, şimdi 'targetState' gönderiyoruz.
+          // Böylece _applyFilters fonksiyonu "Ha, biz kitap modundaymışız" diyebiliyor.
+          _applyFilters(emit, targetState);
+        }
+      }
+    });
+
+    // 3. Filtreleme Yap
+    on<HomeFilterChanged>((event, emit) {
+      final currentState = state;
+      if (currentState is HomeSuccess) {
+        // Gelen filtre null değilse güncelle, null ise (yani temizlenmişse) null yap
+        // Ancak Event içindeki değer null ise ve biz onu değiştirmek istemiyorsak eski değeri korumalıyız.
+        // Buradaki mantık: Event'ten gelen değer varsa onu kullan, yoksa eskisini kullan.
+        // AMA: Filtreyi temizlemek için null gönderebiliriz. Bu yüzden event yapısını kontrol etmemiz lazım.
+
+        // Basit çözüm: Event'teki her alanı kontrol edip state'i güncelliyoruz.
+        // Not: HomeFilterChanged event'ini çağıran yer sadece değişeni göndermeli.
+
+        HomeSuccess newState = currentState;
+
+        if (event.takasTuru != null) {
+          // "Temizle" için boş string veya özel bir değer kullanabiliriz ama şimdilik null gelirse değiştirme mantığı kuralım.
+          // Eğer UI tarafında "Hepsi" seçeneği olursa burayı ona göre ayarlarız.
+          // Şimdilik: Eğer event.takasTuru geldiyse state'i güncelle.
+          newState = newState.copyWith(activeTakasTuru: event.takasTuru);
+        }
+        if (event.kitapTuru != null) {
+          newState = newState.copyWith(activeKitapTuru: event.kitapTuru);
+        }
+        if (event.konum != null) {
+          newState = newState.copyWith(activeKonum: event.konum);
+        }
+
+        // Eğer event boş geldiyse (Temizle butonu), her şeyi sıfırla
+        if (event.takasTuru == null &&
+            event.kitapTuru == null &&
+            event.konum == null) {
+          newState = HomeSuccess(
+            books: currentState.allBooks,
+            allBooks: currentState.allBooks,
+            activeTakasTuru: null,
+            activeKitapTuru: null,
+            activeKonum: null,
+            activeSearchQuery: null,
+          );
+        }
+
+        _applyFilters(emit, newState);
+      }
+    });
+  }
+
+  // --- MERKEZİ FİLTRELEME FONKSİYONU ---
+  // Tüm filtreleri ve aramayı aynı anda uygular
+  void _applyFilters(Emitter<HomeState> emit, HomeSuccess currentState) {
+    var filteredList = currentState.allBooks;
+
+    // 1. Arama Filtresi
+    if (currentState.activeSearchQuery != null &&
+        currentState.activeSearchQuery!.isNotEmpty) {
+      final query = currentState.activeSearchQuery!.toLowerCase();
+      filteredList = filteredList.where((book) {
+        return book.title.toLowerCase().contains(query) ||
+            book.author.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    // 2. Takas Türü
+    if (currentState.activeTakasTuru != null) {
+      final type = currentState.activeTakasTuru;
+      if (type == 'Bağış')
+        filteredList = filteredList.where((b) => b.isDonation).toList();
+      if (type == 'Takas')
+        filteredList = filteredList.where((b) => b.isSwap).toList();
+      if (type == 'Ödünç')
+        filteredList = filteredList.where((b) => b.isLoan).toList();
+    }
+
+    // 3. Kitap Türü (Kategori)
+    if (currentState.activeKitapTuru != null) {
+      final cat = currentState.activeKitapTuru!;
+      final subCategories = AppConstants.getSubCategories(cat);
+
+      if (subCategories.isNotEmpty) {
+        filteredList = filteredList
+            .where((b) => subCategories.contains(b.category))
+            .toList();
+      } else {
+        filteredList = filteredList.where((b) => b.category == cat).toList();
+      }
+    }
+
+    // 4. Konum
+    if (currentState.activeKonum != null) {
+      filteredList = filteredList
+          .where((b) => b.location.contains(currentState.activeKonum!))
+          .toList();
+    }
+
+    // Yeni listeyi yayınla
+    emit(currentState.copyWith(books: filteredList));
+  }
+}
