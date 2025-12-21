@@ -10,7 +10,7 @@ class ChatInitial extends ChatState {}
 
 class ChatSending extends ChatState {} // Mesaj gidiyor...
 
-class ChatSentSuccess extends ChatState {} // Gitti!
+class ChatSentSuccess extends ChatState {} // Gitti
 
 class ChatFailure extends ChatState {
   final String error;

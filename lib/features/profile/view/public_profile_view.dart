@@ -1,5 +1,3 @@
-// lib/features/profile/view/public_profile_view.dart
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,10 +45,9 @@ class _PublicProfileBody extends StatelessWidget {
         foregroundColor: AppColors.textPrimary,
       ),
 
-      // 👇 DOĞRU YAPI: CustomScrollView -> slivers -> [Sliver, Sliver, Sliver]
       body: CustomScrollView(
         slivers: [
-          // 1. PROFİL KARTI (HEADER)
+          // PROFİL KARTI
           SliverToBoxAdapter(
             child: Container(
               width: double.infinity,
@@ -116,7 +113,7 @@ class _PublicProfileBody extends StatelessWidget {
             ),
           ),
 
-          // 2. DEĞERLENDİRMELER BAŞLIĞI
+          // DEĞERLENDİRMELER BAŞLIĞI
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -162,7 +159,7 @@ class _PublicProfileBody extends StatelessWidget {
             ),
           ),
 
-          // 3. YORUMLAR LİSTESİ (BlocBuilder)
+          // YORUMLAR LİSTESİ
           BlocBuilder<ProfileBloc, ProfileState>(
             builder: (context, state) {
               if (state is ProfileSuccess) {
@@ -248,7 +245,7 @@ class _PublicProfileBody extends StatelessWidget {
             },
           ),
 
-          // 4. KİTAPLAR BAŞLIĞI
+          // KİTAPLAR BAŞLIĞI
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -259,7 +256,7 @@ class _PublicProfileBody extends StatelessWidget {
             ),
           ),
 
-          // 5. KİTAP LİSTESİ (BlocBuilder)
+          // KİTAP LİSTESİ
           BlocBuilder<ProfileBloc, ProfileState>(
             builder: (context, state) {
               if (state is ProfileLoading) {
@@ -299,8 +296,7 @@ class _PublicProfileBody extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: BookCard(
                         book: book,
-                        ownerPhotoUrl: targetUser
-                            .photoUrl, // Donmayı engellemek için fotoyu veriyoruz
+                        ownerPhotoUrl: targetUser.photoUrl,
                         onTap: () {
                           Navigator.push(
                             context,

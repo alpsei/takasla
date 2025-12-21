@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:kitaptakas/data/models/request_model.dart'; // RequestModel için
+import 'package:kitaptakas/data/models/request_model.dart';
 import 'package:kitaptakas/features/chat/view/chat_view.dart';
 import 'package:kitaptakas/features/requests/bloc/request_bloc.dart';
 import 'package:kitaptakas/features/requests/bloc/request_event.dart';
@@ -97,7 +97,7 @@ class _RequestsViewState extends State<RequestsView> {
                                 ),
                                 const Gap(4),
                                 Text(
-                                  req.senderName, // 👈 ARTIK İSİM YAZACAK
+                                  req.senderName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black87,
@@ -105,8 +105,6 @@ class _RequestsViewState extends State<RequestsView> {
                                 ),
                               ],
                             ),
-
-                            // 👇 TARİH VARSA GÖSTER (Ödünç İçin)
                             if (req.loanStartDate != null &&
                                 req.loanEndDate != null) ...[
                               const Gap(4),
@@ -116,7 +114,7 @@ class _RequestsViewState extends State<RequestsView> {
                                     Icons.av_timer,
                                     size: 14,
                                     color: Colors.orange,
-                                  ), // İkon değişti (Kronometre)
+                                  ),
                                   const Gap(4),
                                   Text(
                                     "Süre: ${_calculateDays(req.loanStartDate!, req.loanEndDate!)}",
@@ -189,12 +187,10 @@ class _RequestsViewState extends State<RequestsView> {
                               )
                             : null,
                       ),
-
-                      // 👇 ONAYLANDIYSA BUTONLARI GÖSTER 👇
                       if (req.status == 'Onaylandı') ...[
                         const Divider(height: 1),
 
-                        // 1. Mesaj Butonu
+                        // Mesaj Butonu
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -225,7 +221,7 @@ class _RequestsViewState extends State<RequestsView> {
                           ),
                         ),
 
-                        // 2. Teslimat Onay Butonu (Satıcı Olduğum İçin true)
+                        // Teslimat Onay Butonu (Satıcı Olduğum İçin true)
                         _buildDeliveryActions(context, req, true),
 
                         const Gap(8),
@@ -253,7 +249,6 @@ class _RequestsViewState extends State<RequestsView> {
     }
   }
 
-  // 👇 ORTAK TESLİMAT BUTONLARI (BURASI ÇOK ÖNEMLİ) 👇
   Widget _buildDeliveryActions(
     BuildContext context,
     RequestModel req,

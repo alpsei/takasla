@@ -1,5 +1,3 @@
-// lib/features/book_detail/view/book_detail_view.dart
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,14 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-// 👇 SADECE KENDİ BLOC DOSYALARI
+import 'package:kitaptakas/core/utils/show_report_dialog.dart';
 import 'package:kitaptakas/features/book_detail/bloc/request_bloc.dart';
 import 'package:kitaptakas/features/book_detail/bloc/request_event.dart';
 import 'package:kitaptakas/features/book_detail/bloc/request_state.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-
 import '../../../../core/constants/app_colors.dart';
 import '../../../../data/models/book_model.dart';
 import '../../../../data/repositories/book_repository.dart';
@@ -112,12 +108,28 @@ class BookDetailView extends StatelessWidget {
             IconButton(
               onPressed: () => _showDeleteConfirmDialog(context),
               icon: const Icon(Icons.delete_outline, color: Colors.red),
+            )
+          else
+            IconButton(
+              onPressed: () {
+                // Giriş yapmamışsa uyar
+                if (FirebaseAuth.instance.currentUser == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Bildirmek için giriş yapmalısınız."),
+                    ),
+                  );
+                  return;
+                }
+                // Rapor Pencresini Aç
+                showReportDialog(context, reportedId: book.id, type: 'book');
+              },
+              icon: const Icon(Icons.flag_outlined, color: Colors.redAccent),
+              tooltip: "İlanı Bildir",
             ),
           const Gap(8),
         ],
       ),
-
-      // lib/features/book_detail/view/book_detail_view.dart
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
@@ -125,7 +137,7 @@ class BookDetailView extends StatelessWidget {
           border: Border(top: BorderSide(color: Colors.black12)),
         ),
         child: isMyBook
-            // 1. DURUM: KİTAP BENİMSE
+            // DURUM: KİTAP BENİMSE
             ? SizedBox(
                 height: 56,
                 child: Center(
@@ -139,12 +151,12 @@ class BookDetailView extends StatelessWidget {
                   ),
                 ),
               )
-            // 👇 2. YENİ DURUM: KİTAP MÜSAİT DEĞİLSE (ONAYLANMIŞSA)
+            //  YENİ DURUM: KİTAP MÜSAİT DEĞİLSE (ONAYLANMIŞSA)
             : (!book.isAvailable)
             ? SizedBox(
                 height: 56,
                 child: Container(
-                  color: Colors.grey.shade300, // Sönük arka plan
+                  color: Colors.grey.shade300,
                   child: const Center(
                     child: Text(
                       "Bu Kitap Artık Mevcut Değil 🔒",
@@ -190,7 +202,7 @@ class BookDetailView extends StatelessWidget {
               )
             // B. GİRİŞ YAPMIŞSAM
             : (book.pdfBase64 != null && book.pdfBase64!.isNotEmpty)
-            // 🔥 YENİ EKLENEN KISIM: PDF VARSA İNDİR BUTONU 🔥
+            // PDF VARSA İNDİR BUTONU
             ? SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -209,21 +221,15 @@ class BookDetailView extends StatelessWidget {
                           duration: Duration(seconds: 1),
                         ),
                       );
-
-                      // 1. Base64 Çöz
                       final bytes = base64Decode(book.pdfBase64!);
-
-                      // 2. Klasör Bul
                       final dir = await getTemporaryDirectory();
-
-                      // 3. Dosya Oluştur (İsimdeki boşlukları temizle)
                       final safeTitle = book.title.replaceAll(' ', '_');
                       final file = File('${dir.path}/$safeTitle.pdf');
 
-                      // 4. Yaz
+                      // Yaz
                       await file.writeAsBytes(bytes, flush: true);
 
-                      // 5. Aç
+                      // Aç
                       final result = await OpenFilex.open(file.path);
 
                       if (result.type != ResultType.done) {
@@ -251,7 +257,7 @@ class BookDetailView extends StatelessWidget {
                   },
                 ),
               )
-            // C. PDF YOKSA TALEP BUTONU (ESKİ BLOC CONSUMER)
+            // C. PDF YOKSA TALEP BUTONU
             : BlocConsumer<RequestBloc, RequestState>(
                 listener: (context, state) {
                   if (state is RequestActionSuccess) {
@@ -286,41 +292,39 @@ class BookDetailView extends StatelessWidget {
                       onPressed: (isLoading || hasRequest)
                           ? null
                           : () async {
-                              // 👈 async yaptık çünkü takvim açılacak
                               final currentUserId =
                                   FirebaseAuth.instance.currentUser?.uid;
-
-                              // Ekstra güvenlik (Zaten yukarıda kontrol ediliyor ama olsun)
                               if (currentUserId == null) return;
 
                               DateTime? start;
                               DateTime? end;
 
-                              // 🗓️ 1. EĞER KİTAP "ÖDÜNÇ" İSE TAKVİM AÇ
+                              //  EĞER KİTAP "ÖDÜNÇ" İSE TAKVİM AÇ
                               if (book.isLoan) {
-                                final DateTimeRange?
-                                dateRange = await showDateRangePicker(
-                                  context: context,
-                                  firstDate: DateTime.now(), // Geçmiş seçilemez
-                                  lastDate: DateTime.now().add(
-                                    const Duration(days: 90),
-                                  ), // Max 90 gün
-                                  helpText: "Ödünç Alma Aralığı Seçin",
-                                  cancelText: "İPTAL",
-                                  confirmText: "SEÇ",
-                                  saveText: "TAMAM",
-                                  builder: (context, child) {
-                                    return Theme(
-                                      data: ThemeData.light().copyWith(
-                                        primaryColor: AppColors.primary,
-                                        colorScheme: const ColorScheme.light(
-                                          primary: AppColors.primary,
-                                        ),
-                                      ),
-                                      child: child!,
+                                final DateTimeRange? dateRange =
+                                    await showDateRangePicker(
+                                      context: context,
+                                      firstDate: DateTime.now(),
+                                      lastDate: DateTime.now().add(
+                                        const Duration(days: 90),
+                                      ), // Max 90 gün
+                                      helpText: "Ödünç Alma Aralığı Seçin",
+                                      cancelText: "İPTAL",
+                                      confirmText: "SEÇ",
+                                      saveText: "TAMAM",
+                                      builder: (context, child) {
+                                        return Theme(
+                                          data: ThemeData.light().copyWith(
+                                            primaryColor: AppColors.primary,
+                                            colorScheme:
+                                                const ColorScheme.light(
+                                                  primary: AppColors.primary,
+                                                ),
+                                          ),
+                                          child: child!,
+                                        );
+                                      },
                                     );
-                                  },
-                                );
 
                                 // Kullanıcı tarih seçmeden (İptal) kapatırsa işlemi durdur
                                 if (dateRange == null) return;
@@ -329,17 +333,15 @@ class BookDetailView extends StatelessWidget {
                                 end = dateRange.end;
                               }
 
-                              // 2. TARİHLERLE (VEYA NULL) BİRLİKTE GÖNDER
+                              // TARİHLERLE (VEYA NULL) BİRLİKTE GÖNDER
                               if (context.mounted) {
                                 context.read<RequestBloc>().add(
                                   RequestSent(
                                     bookId: book.id,
                                     bookTitle: book.title,
                                     receiverId: book.ownerId,
-                                    startDate:
-                                        start, // Ödünç ise dolu, değilse null gider
-                                    endDate:
-                                        end, // Ödünç ise dolu, değilse null gider
+                                    startDate: start,
+                                    endDate: end,
                                   ),
                                 );
                               }

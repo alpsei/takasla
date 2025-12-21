@@ -1,11 +1,9 @@
-// lib/features/onboarding/view/onboarding_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../auth/view/auth_gate.dart'; // Tanıtım bitince buraya gidecek
+import '../../auth/view/auth_gate.dart';
 
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
@@ -24,7 +22,7 @@ class _OnboardingViewState extends State<OnboardingView> {
     await prefs.setBool('showOnboarding', false); // "Artık gösterme" de
 
     if (mounted) {
-      // AuthGate'e yönlendir (O da duruma göre Welcome veya Home açar)
+      // AuthGate'e yönlendir
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AuthGate()),
@@ -41,7 +39,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         child: PageView(
           controller: _controller,
           onPageChanged: (index) {
-            setState(() => _isLastPage = index == 2); // 3 sayfa var (0, 1, 2)
+            setState(() => _isLastPage = index == 2);
           },
           children: [
             // SAYFA 1: TAKAS
@@ -54,8 +52,7 @@ class _OnboardingViewState extends State<OnboardingView> {
             ),
             // SAYFA 2: PUAN
             _buildPage(
-              icon: Icons
-                  .shield_outlined, // Yıldız yerine 'Kalkan' ikonu daha uygun (Güvenlik)
+              icon: Icons.shield_outlined,
               color: AppColors.primary,
               title: "Güvenilir Depozito",
               description:
@@ -73,7 +70,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         ),
       ),
 
-      // ALT KONTROLLER (Noktalar ve Butonlar)
+      // ALT KONTROLLER
       bottomSheet: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         height: 80,
@@ -81,9 +78,9 @@ class _OnboardingViewState extends State<OnboardingView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // GEÇ BUTONU (Son sayfada gizle)
+            // GEÇ BUTONU
             _isLastPage
-                ? const SizedBox(width: 50) // Boşluk
+                ? const SizedBox(width: 50)
                 : TextButton(
                     onPressed: _finishOnboarding,
                     child: const Text(
@@ -92,7 +89,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                     ),
                   ),
 
-            // NOKTALAR (Indicator)
+            // NOKTALAR
             SmoothPageIndicator(
               controller: _controller,
               count: 3,
@@ -133,7 +130,7 @@ class _OnboardingViewState extends State<OnboardingView> {
     );
   }
 
-  // Sayfa Tasarımı (Tekrar tekrar yazmamak için fonksiyon yaptık)
+  // Sayfa Tasarımı
   Widget _buildPage({
     required IconData icon,
     required Color color,

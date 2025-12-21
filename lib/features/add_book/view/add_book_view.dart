@@ -1,5 +1,3 @@
-// lib/features/add_book/view/add_book_view.dart
-
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -48,7 +46,7 @@ class _AddBookViewState extends State<AddBookView> {
   final ImagePicker _picker = ImagePicker();
   PlatformFile? _selectedPdf;
 
-  // 📸 RESİM SEÇME
+  // RESİM SEÇME
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -67,7 +65,7 @@ class _AddBookViewState extends State<AddBookView> {
     }
   }
 
-  // 📄 PDF SEÇME
+  // PDF SEÇME
   Future<void> _pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -144,9 +142,8 @@ class _AddBookViewState extends State<AddBookView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 👇 --- AKILLI SEÇİM ALANI (BURASI DEĞİŞTİ) --- 👇
               if (!isPdfMode && !isImageMode)
-                // 1. HİÇBİRİ SEÇİLİ DEĞİLSE: İKİSİNİ YAN YANA GÖSTER
+                // HİÇBİRİ SEÇİLİ DEĞİLSE: İKİSİNİ YAN YANA GÖSTER
                 Row(
                   children: [
                     Expanded(
@@ -170,7 +167,7 @@ class _AddBookViewState extends State<AddBookView> {
                   ],
                 )
               else if (isImageMode)
-                // 2. FOTOĞRAF SEÇİLDİYSE: FOTOĞRAFI GÖSTER + KALDIR BUTONU
+                // FOTOĞRAF SEÇİLDİYSE: FOTOĞRAFI GÖSTER + KALDIR BUTONU
                 Column(
                   children: [
                     Container(
@@ -197,7 +194,7 @@ class _AddBookViewState extends State<AddBookView> {
                   ],
                 )
               else if (isPdfMode)
-                // 3. PDF SEÇİLDİYSE: PDF KARTI GÖSTER + KALDIR BUTONU
+                // PDF SEÇİLDİYSE: PDF KARTI GÖSTER + KALDIR BUTONU
                 Column(
                   children: [
                     Container(
@@ -246,7 +243,7 @@ class _AddBookViewState extends State<AddBookView> {
 
               const Gap(24),
 
-              // --- FORM ALANLARI (GERİSİ AYNI) ---
+              // --- FORM ALANLARI ---
               _buildLabel(isPdfMode ? "Dosya Başlığı" : "Kitap Adı"),
               _buildTextField(
                 "Ad girin",
@@ -398,7 +395,7 @@ class _AddBookViewState extends State<AddBookView> {
 
   // --- YARDIMCI WIDGETLAR ---
 
-  // Kart Tasarımı (Boş Durum İçin)
+  // Kart Tasarımı
   Widget _buildSelectionCard({
     required IconData icon,
     required String label,

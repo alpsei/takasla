@@ -1,10 +1,8 @@
-// lib/features/settings/view/settings_view.dart
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../auth/view/welcome_view.dart'; // Çıkış yapınca/silince buraya dönecek
+import '../../auth/view/welcome_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -32,8 +30,6 @@ class _SettingsViewState extends State<SettingsView> {
           ),
           ElevatedButton(
             onPressed: () async {
-              // BURAYA SİLME MANTIĞI GELECEK (Repo'ya yazacağız)
-              // Şimdilik sadece çıkış yapıp ana ekrana atalım:
               await FirebaseAuth.instance.signOut();
 
               if (mounted) {
@@ -111,14 +107,13 @@ class _SettingsViewState extends State<SettingsView> {
                 setState(() {
                   _notificationsEnabled = value;
                 });
-                // Burada veritabanına veya SharedPreferences'a kaydedebiliriz
               },
             ),
           ),
 
           const Gap(24),
 
-          // --- BÖLÜM 2: GENEL LİNKLER ---
+          // --- GENEL LİNKLER ---
           Container(
             color: Colors.white,
             child: Column(
@@ -126,9 +121,7 @@ class _SettingsViewState extends State<SettingsView> {
                 _buildSettingsTile(
                   icon: Icons.lock_outline,
                   title: "Gizlilik Politikası",
-                  onTap: () {
-                    // Linke gitme kodu buraya
-                  },
+                  onTap: () {},
                 ),
                 _buildDivider(),
                 _buildSettingsTile(
@@ -148,7 +141,7 @@ class _SettingsViewState extends State<SettingsView> {
 
           const Gap(24),
 
-          // --- BÖLÜM 3: TEHLİKELİ BÖLGE (SİLME) ---
+          // --- HESAP SİLME ---
           Container(
             color: Colors.white,
             child: ListTile(
@@ -193,7 +186,7 @@ class _SettingsViewState extends State<SettingsView> {
       thickness: 0.5,
       indent: 56, // İkonun hizasından başlasın diye
       endIndent: 0,
-      color: Colors.grey, // Hafif gri
+      color: Colors.grey,
     );
   }
 }

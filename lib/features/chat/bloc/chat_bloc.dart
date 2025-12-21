@@ -21,7 +21,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           content: event.content,
         );
         emit(ChatSentSuccess());
-        emit(ChatInitial()); // Tekrar başa dön ki yeni mesaj yazılabilsin
+        emit(ChatInitial());
       } catch (e) {
         emit(ChatFailure(e.toString()));
       }

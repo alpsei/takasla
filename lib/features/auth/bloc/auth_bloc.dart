@@ -18,9 +18,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = _authRepository.currentUser;
       add(AuthStatusChanged(user));
     });
-    on<AuthStatusChanged>((event, emit) {
+    on<AuthStatusChanged>((event, emit) async {
       if (event.user != null) {
-        emit(AuthAuthenticated(event.user!));
+        final role = await _authRepository.getUserRole(event.user!.uid);
+        emit(AuthAuthenticated(event.user!, role));
       } else {
         emit(AuthUnauthenticated());
       }
@@ -47,7 +48,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
 
         if (user != null) {
-          emit(AuthAuthenticated(user));
+          final role = await _authRepository.getUserRole(user.uid);
+          emit(AuthAuthenticated(user, role));
         } else {
           emit(const AuthFailure("Giriş yapılamadı."));
         }
@@ -73,8 +75,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             location: "Konum Yok",
             photoBase64: null,
             setPoint: 100,
+            role: 'user',
           );
-          emit(AuthAuthenticated(user));
+          emit(AuthAuthenticated(user, 'user'));
         } else {
           emit(const AuthFailure("Kayıt olunamadı."));
         }
@@ -91,6 +94,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             .collection('users')
             .doc(user?.uid)
             .get();
+        String role = 'user';
         if (user != null) {
           final userDoc = await FirebaseFirestore.instance
               .collection('users')
@@ -105,10 +109,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             location: "Konum Yok",
             photoBase64: null,
             setPoint: 100,
+            role: role,
           );
 
-          emit(AuthAuthenticated(user));
+          emit(AuthAuthenticated(user, role));
         } else {
+          role = userDoc.data()?['role'] as String? ?? 'user';
           emit(AuthInitial());
         }
       } catch (e) {
@@ -122,10 +128,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     // Kullanıcı var mı diye kontrol et
-    on<AuthCheckRequest>((event, emit) {
+    on<AuthCheckRequest>((event, emit) async {
       final user = _authRepository.currentUser;
       if (user != null) {
-        emit(AuthAuthenticated(user));
+        final role = await _authRepository.getUserRole(user.uid);
+        emit(AuthAuthenticated(user, role));
       } else {
         emit(AuthUnauthenticated());
       }

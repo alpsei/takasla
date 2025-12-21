@@ -1,9 +1,7 @@
-// lib/features/requests/view/widgets/rate_user_dialog.dart
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // 👈 YENİ PAKET
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gap/gap.dart';
 import 'package:kitaptakas/features/requests/bloc/request_bloc.dart';
 import 'package:kitaptakas/features/requests/bloc/request_event.dart';
@@ -43,7 +41,7 @@ class _RateUserDialogState extends State<RateUserDialog> {
             ),
             const Gap(20),
 
-            // ⭐ YILDIZ SEÇİCİ
+            // YILDIZ SEÇİCİ
             RatingBar.builder(
               initialRating: 5,
               minRating: 1,
@@ -59,7 +57,7 @@ class _RateUserDialogState extends State<RateUserDialog> {
             ),
             const Gap(20),
 
-            // 💬 YORUM ALANI
+            // YORUM ALANI
             TextField(
               controller: _commentController,
               maxLines: 3,

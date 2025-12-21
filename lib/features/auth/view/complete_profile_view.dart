@@ -1,5 +1,3 @@
-// lib/features/auth/view/complete_profile_view.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,18 +24,14 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
   String? _detectedLocation;
   bool _isLoading = false;
 
-  // 🔒 SMS İÇİN GEREKLİ DEĞİŞKENLER (Şimdilik Kapalı)
-  // bool _isPhoneVerified = false;
-  // String? _verificationId;
-
-  // 👇 TELEFON FORMATLAYICI
+  // TELEFON FORMATLAYICI
   final maskFormatter = MaskTextInputFormatter(
     mask: '### ### ## ##',
     filter: {"#": RegExp(r'[0-9]')},
     type: MaskAutoCompletionType.lazy,
   );
 
-  // 📍 KONUM BULMA
+  // KONUM BULMA
   Future<void> _getLocation() async {
     setState(() => _isLoading = true);
     try {
@@ -68,7 +62,7 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
     }
   }
 
-  /* 🔒 SMS DOĞRULAMA FONKSİYONLARI (Şimdilik Kapalı)
+  /* SMS DOĞRULAMA FONKSİYONLARI
   Future<void> _verifyPhone() async {
     if (_phoneController.text.isEmpty || _phoneController.text.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Lütfen geçerli bir numara girin.")));
@@ -152,9 +146,9 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
   }
   */
 
-  // 💾 KAYDET VE DEVAM ET
+  // KAYDET VE DEVAM ET
   Future<void> _saveAndContinue() async {
-    /* 🔒 DOĞRULAMA KONTROLÜ (Şimdilik Kapalı)
+    /* DOĞRULAMA KONTROLÜ 
     if (!_isPhoneVerified) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Lütfen önce telefon numaranızı doğrulayın."), backgroundColor: Colors.orange));
       return;
@@ -241,7 +235,7 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
             _buildTextField("Soyad", _surnameController, Icons.person_outline),
             const Gap(16),
 
-            // 👇 TELEFON ALANI
+            // TELEFON ALANI
             Row(
               children: [
                 Expanded(
@@ -249,7 +243,7 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                     controller: _phoneController,
                     inputFormatters: [maskFormatter],
                     keyboardType: TextInputType.phone,
-                    // enabled: !_isPhoneVerified, // 🔒 Şimdilik hep açık kalsın
+                    // enabled: !_isPhoneVerified,
                     decoration: InputDecoration(
                       labelText: "Telefon Numarası (İsteğe Bağlı)",
                       hintText: "555 555 55 55",
@@ -258,13 +252,13 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      // suffixIcon: _isPhoneVerified ? const Icon(Icons.check_circle, color: Colors.green) : null, // 🔒
+                      // suffixIcon: _isPhoneVerified ? const Icon(Icons.check_circle, color: Colors.green) : null,
                     ),
                   ),
                 ),
                 const Gap(10),
 
-                /* 🔒 DOĞRULA BUTONU (Şimdilik Kapalı)
+                /* DOĞRULA BUTONU 
                 if (!_isPhoneVerified)
                   SizedBox(
                     height: 55,
@@ -334,8 +328,7 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                // onPressed: (_isLoading || !_isPhoneVerified) ? null : _saveAndContinue, // 🔒 ESKİSİ
-                onPressed: _isLoading ? null : _saveAndContinue, // ✅ YENİSİ
+                onPressed: _isLoading ? null : _saveAndContinue,
                 child: const Text("Kaydet ve Başla"),
               ),
             ),

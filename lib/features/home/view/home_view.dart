@@ -1,5 +1,3 @@
-// lib/features/home/view/home_view.dart
-
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,9 +8,10 @@ import 'package:gap/gap.dart';
 import 'package:kitaptakas/core/constants/app_constants.dart';
 import 'package:kitaptakas/core/constants/tr_cities.dart';
 import 'package:kitaptakas/data/repositories/auth_repository.dart';
+import 'package:kitaptakas/features/admin/view/admin_dashboard.dart';
 import 'package:kitaptakas/features/auth/bloc/auth_bloc.dart';
 import 'package:kitaptakas/features/auth/bloc/auth_event.dart';
-import 'package:kitaptakas/features/auth/bloc/auth_state.dart'; // 👈 BU ÖNEMLİ
+import 'package:kitaptakas/features/auth/bloc/auth_state.dart';
 import 'package:kitaptakas/features/auth/view/welcome_view.dart';
 import 'package:kitaptakas/features/book_detail/view/book_detail_view.dart';
 import 'package:kitaptakas/features/profile/view/profile_view.dart';
@@ -50,13 +49,9 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final isGuest = user == null;
-
-    // 👇 İŞTE BU KISIM EKSİKTİ!
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        // Eğer çıkış yapıldıysa veya giriş yapılmamışsa
         if (state is AuthInitial || state is AuthUnauthenticated) {
-          // Hemen Karşılama Ekranına git ve geçmişi sil
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const WelcomeView()),
@@ -66,37 +61,37 @@ class HomeView extends StatelessWidget {
       },
       child: Scaffold(
         drawer: Drawer(
-          child: Column(
-            children: [
-              // Menü Başlığı (Hata Önleyici Kontrol ile)
-              StreamBuilder<DocumentSnapshot>(
-                stream: (isGuest || user == null)
-                    ? null
-                    : FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(user.uid)
-                          .snapshots(),
-                builder: (context, snapshot) {
-                  String userName = "Kitap Sever";
-                  String userMail = "Misafir";
-                  String? photoData;
+          child: StreamBuilder<DocumentSnapshot>(
+            stream: (isGuest || user == null)
+                ? null
+                : FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .snapshots(),
+            builder: (context, snapshot) {
+              String userName = "Kitap Sever";
+              String userMail = "Misafir";
+              String? photoData;
+              String userRole = "user";
+              if (user != null) {
+                userMail = user.email ?? "";
+                if (snapshot.hasData &&
+                    snapshot.data != null &&
+                    snapshot.data!.exists) {
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  userName = data['name'] ?? userName;
+                  photoData = data['photoUrl'];
+                  userRole = data['role'] ?? "user";
+                }
+              } else {
+                userName = "Misafir Kullanıcı";
+                userMail = "Giriş Yapılmadı";
+              }
 
-                  if (user != null) {
-                    userMail = user.email ?? "";
-                    if (snapshot.hasData &&
-                        snapshot.data != null &&
-                        snapshot.data!.exists) {
-                      final data =
-                          snapshot.data!.data() as Map<String, dynamic>;
-                      userName = data['name'] ?? userName;
-                      photoData = data['photoUrl'];
-                    }
-                  } else {
-                    userName = "Misafir Kullanıcı";
-                    userMail = "Giriş Yapılmadı";
-                  }
-
-                  return UserAccountsDrawerHeader(
+              return Column(
+                children: [
+                  // --- HEADER ---
+                  UserAccountsDrawerHeader(
                     decoration: const BoxDecoration(color: AppColors.primary),
                     accountName: Text(
                       userName,
@@ -120,101 +115,124 @@ class HomeView extends StatelessWidget {
                             )
                           : null,
                     ),
-                  );
-                },
-              ),
-
-              // Menü Öğeleri
-              if (!isGuest) ...[
-                ListTile(
-                  leading: const Icon(Icons.person_outline),
-                  title: const Text("Profilim"),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProfilePage(),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.settings_outlined),
-                  title: const Text("Ayarlar"),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsView(),
-                      ),
-                    );
-                  },
-                ),
-
-                ListTile(
-                  leading: const Icon(Icons.notifications_outlined),
-                  title: const Text("Gelen Talepler"),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RequestsPage(),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.send_outlined),
-                  title: const Text("Gönderdiğim Talepler"),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SentRequestsPage(),
-                      ),
-                    );
-                  },
-                ),
-
-                const Spacer(),
-                const Divider(),
-              ],
-
-              // ÇIKIŞ YAP BUTONU
-              ListTile(
-                leading: Icon(
-                  isGuest ? Icons.login : Icons.logout,
-                  color: isGuest ? Colors.green : Colors.red,
-                ),
-                title: Text(
-                  isGuest ? "Giriş Yap" : "Çıkış Yap",
-                  style: TextStyle(
-                    color: isGuest ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                onTap: () {
-                  if (isGuest) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WelcomeView(),
-                      ),
-                      (route) => false,
-                    );
-                  } else {
-                    // Çıkış isteği gönderildiğinde yukarıdaki Listener yakalayacak
-                    context.read<AuthBloc>().add(AuthLogoutRequested());
-                  }
-                },
-              ),
 
-              const Gap(20),
-            ],
+                  // --- MENÜ ÖĞELERİ ---
+                  if (!isGuest) ...[
+                    if (userRole == 'admin') ...[
+                      ListTile(
+                        leading: const Icon(
+                          Icons.admin_panel_settings,
+                          color: Colors.redAccent,
+                        ),
+                        title: const Text(
+                          'Yönetici Paneli',
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const AdminDashboardScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(),
+                    ],
+                    ListTile(
+                      leading: const Icon(Icons.person_outline),
+                      title: const Text("Profilim"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProfilePage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.settings_outlined),
+                      title: const Text("Ayarlar"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsView(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.notifications_outlined),
+                      title: const Text("Gelen Talepler"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RequestsPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.send_outlined),
+                      title: const Text("Gönderdiğim Talepler"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SentRequestsPage(),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const Spacer(),
+                    const Divider(),
+                  ],
+
+                  // --- ÇIKIŞ YAP / GİRİŞ YAP ---
+                  ListTile(
+                    leading: Icon(
+                      isGuest ? Icons.login : Icons.logout,
+                      color: isGuest ? Colors.green : Colors.red,
+                    ),
+                    title: Text(
+                      isGuest ? "Giriş Yap" : "Çıkış Yap",
+                      style: TextStyle(
+                        color: isGuest ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      if (isGuest) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WelcomeView(),
+                          ),
+                          (route) => false,
+                        );
+                      } else {
+                        context.read<AuthBloc>().add(AuthLogoutRequested());
+                      }
+                    },
+                  ),
+                  const Gap(20),
+                ],
+              );
+            },
           ),
         ),
         appBar: AppBar(

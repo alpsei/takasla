@@ -7,6 +7,7 @@ class UserModel extends Equatable {
   final String? photoUrl;
   final String? location;
   final int points; // Takas puanı
+  final String role;
 
   final double ratingSum;
   final int ratingCount;
@@ -20,6 +21,7 @@ class UserModel extends Equatable {
     this.points = 0,
     this.ratingSum = 0.0,
     this.ratingCount = 0,
+    this.role = 'user',
   });
 
   // JSON -> Dart
@@ -33,6 +35,7 @@ class UserModel extends Equatable {
       points: json['points'] as int? ?? 0,
       ratingSum: (json['ratingSum'] as num?)?.toDouble() ?? 0.0,
       ratingCount: json['ratingCount'] as int? ?? 0,
+      role: json['role'] as String? ?? 'user',
     );
   }
 
@@ -47,6 +50,7 @@ class UserModel extends Equatable {
       'points': points,
       'ratingSum': ratingSum,
       'ratingCount': ratingCount,
+      'role': role,
     };
   }
 

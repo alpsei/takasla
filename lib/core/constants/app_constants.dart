@@ -1,7 +1,4 @@
-// lib/core/constants/app_constants.dart
-
 class AppConstants {
-  // 👇 YENİ HİYERARŞİK YAPI 👇
   static const Map<String, List<String>> bookCategories = {
     "Sınav Kitapları": [
       "YKS (TYT/AYT)",
@@ -31,7 +28,7 @@ class AppConstants {
     "Diğer": ["Ansiklopedi", "Dergi", "Diğer"],
   };
 
-  // KİTAP DURUMLARI (Aynen kalıyor)
+  // KİTAP DURUMLARI
   static const List<String> bookConditions = [
     "Yeni (Sıfır)",
     "Çok İyi",

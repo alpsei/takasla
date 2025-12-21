@@ -9,7 +9,7 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
   RequestsBloc({required BookRepository bookRepository})
     : _bookRepository = bookRepository,
       super(RequestsInitial()) {
-    // 1. Talepleri Getir
+    // Talepleri Getir
     on<RequestsLoad>((event, emit) async {
       emit(RequestsLoading());
       try {
@@ -22,9 +22,8 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
       }
     });
 
-    // 2. Durum Güncelle
+    // Durum Güncelle
     on<RequestsUpdateStatus>((event, emit) async {
-      // Mevcut listeyi kaybetmemek için loading yapmıyoruz, direkt işlemi yapıyoruz
       try {
         await _bookRepository.updateRequestStatus(
           event.requestId,
@@ -47,7 +46,6 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
       }
     });
     on<RequestsSubmitReview>((event, emit) async {
-      // Loading vermiyoruz ki liste kaybolmasın, arkada yapsın
       try {
         await _bookRepository.addReview(
           reviewerId: event.reviewerId,
@@ -69,9 +67,6 @@ class RequestsBloc extends Bloc<RequestsEvent, RequestsState> {
           isSeller: event.isSeller,
           status: event.status,
         );
-        // Listeyi yenile (Alıcı veya Satıcı ID'sine göre - Şimdilik basitçe reload yapalım)
-        // Burada basit bir trick: Hangi sayfadaysak oranın Load eventini tetiklemek gerekir.
-        // Şimdilik state'i Success olarak tekrar emit edelim veya failure vermeyelim yeter.
       } catch (e) {
         emit(RequestsFailure("Hata: $e"));
       }

@@ -1,4 +1,4 @@
-import 'dart:io'; // Dosya (Resim) işlemi için
+import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -9,7 +9,6 @@ abstract class AddBookEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// Kullanıcı "Yükle" butonuna bastığında tetiklenen olay
 class AddBookSubmitted extends AddBookEvent {
   final String title;
   final String author;

@@ -5,10 +5,9 @@ import '../models/message_model.dart';
 class ChatRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // 1. MESAJ GÖNDER
+  // MESAJ GÖNDER
   Future<void> sendMessage({
-    required String
-    requestId, // Chat odası ID'si olarak Talep ID'sini kullanacağız
+    required String requestId,
     required String senderId,
     required String content,
   }) async {
@@ -21,7 +20,7 @@ class ChatRepository {
         timestamp: DateTime.now(),
       );
 
-      // 'requests' -> 'requestId' -> 'messages' (Alt Koleksiyon)
+      // 'requests' -> 'requestId' -> 'messages'
       await _firestore
           .collection('requests')
           .doc(requestId)
@@ -33,7 +32,7 @@ class ChatRepository {
     }
   }
 
-  // 2. MESAJLARI CANLI DİNLE (Stream)
+  // MESAJLARI CANLI DİNLE (Stream)
   Stream<List<MessageModel>> getMessages(String requestId) {
     return _firestore
         .collection('requests')

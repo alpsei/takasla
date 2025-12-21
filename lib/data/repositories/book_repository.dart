@@ -111,7 +111,7 @@ class BookRepository {
         pdfBase64: pdfData,
       );
 
-      // 3. Kaydet
+      // Kaydet
       await firestore.collection('books').doc(bookId).set(newBook.toJson());
     } catch (e) {
       throw Exception("Kitap eklenirken hata: $e");
@@ -231,7 +231,7 @@ class BookRepository {
 
     try {
       await firestore.runTransaction((transaction) async {
-        // 1. Talebin güncel halini çek (Kimin gönderdiğini bulmamız lazım)
+        // Talebin güncel halini çek
         final requestSnapshot = await transaction.get(requestRef);
 
         if (!requestSnapshot.exists) {
@@ -240,7 +240,7 @@ class BookRepository {
 
         final senderId = requestSnapshot.data()?['senderId'];
         final bookId = requestSnapshot.data()?['bookId'];
-        // 2. Eğer reddedildi ise puanı iade et
+        // Eğer reddedildi ise puanı iade et
         if (newStatus == 'Reddedildi') {
           final userRef = firestore.collection('users').doc(senderId);
           final userSnapshot = await transaction.get(userRef);
@@ -316,7 +316,7 @@ class BookRepository {
   }) async {
     final firestore = FirebaseFirestore.instance;
 
-    // 1. Referansları Hazırla
+    // Referansları Hazırla
     final userRef = firestore.collection('users').doc(targetUserId);
     final reviewRef = firestore.collection('reviews').doc();
 

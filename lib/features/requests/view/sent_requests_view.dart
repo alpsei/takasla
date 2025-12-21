@@ -104,8 +104,6 @@ class SentRequestsView extends StatelessWidget {
                             ),
                           ],
                         ),
-
-                        // 👇 TARİH ARALIĞI GÖSTERİMİ (YENİ EKLENEN KISIM) 👇
                         if (req.loanStartDate != null &&
                             req.loanEndDate != null) ...[
                           const Gap(8),
@@ -178,17 +176,17 @@ class SentRequestsView extends StatelessWidget {
                                           : () async {
                                               await showDialog(
                                                 context: context,
-                                                builder: (_) => BlocProvider.value(
-                                                  value: context
-                                                      .read<RequestsBloc>(),
-                                                  child: RateUserDialog(
-                                                    requestId: req
-                                                        .id, // 👈 ID'yi gönder
-                                                    targetUserId:
-                                                        req.receiverId,
-                                                    bookId: req.bookId,
-                                                  ),
-                                                ),
+                                                builder: (_) =>
+                                                    BlocProvider.value(
+                                                      value: context
+                                                          .read<RequestsBloc>(),
+                                                      child: RateUserDialog(
+                                                        requestId: req.id,
+                                                        targetUserId:
+                                                            req.receiverId,
+                                                        bookId: req.bookId,
+                                                      ),
+                                                    ),
                                               );
                                               // Dialog kapanınca sayfayı yenile (Buton güncellensin)
                                               if (context.mounted) {

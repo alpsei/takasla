@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:kitaptakas/features/home/view/home_view.dart';
 import '../../../../core/constants/app_colors.dart';
-import 'login_view.dart'; // Birazdan oluşturacağız
-import 'register_view.dart'; // Birazdan oluşturacağız
+import 'login_view.dart';
+import 'register_view.dart';
 
 class WelcomeView extends StatelessWidget {
   const WelcomeView({super.key});
@@ -18,12 +18,12 @@ class WelcomeView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(), // Üst boşluk
-              // 1. LOGO VEYA İKON
+              const Spacer(),
+              // İKON
               Image.asset('assets/icon.png', width: 200, height: 200),
               const Gap(32),
 
-              // 2. BAŞLIK
+              // BAŞLIK
               const Text(
                 "Takasla!",
                 style: TextStyle(
@@ -34,7 +34,7 @@ class WelcomeView extends StatelessWidget {
               ),
               const Gap(12),
 
-              // 3. SLOGAN
+              // SLOGAN
               const Text(
                 "Kitaplar Köprü Kursun,\nBilgi Paylaşılsın.",
                 textAlign: TextAlign.center,
@@ -45,8 +45,8 @@ class WelcomeView extends StatelessWidget {
                 ),
               ),
 
-              const Spacer(), // Orta boşluk
-              // 4. GİRİŞ YAP BUTONU
+              const Spacer(),
+              // GİRİŞ YAP BUTONU
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -79,7 +79,7 @@ class WelcomeView extends StatelessWidget {
               ),
               const Gap(16),
 
-              // 5. KAYIT OL BUTONU
+              // KAYIT OL BUTONU
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -114,7 +114,7 @@ class WelcomeView extends StatelessWidget {
               ),
               const Gap(24),
 
-              // 6. MİSAFİR GİRİŞİ
+              // MİSAFİR GİRİŞİ
               TextButton(
                 onPressed: () {
                   Navigator.pushReplacement(

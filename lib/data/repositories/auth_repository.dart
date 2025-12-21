@@ -21,13 +21,14 @@ class AuthRepository {
     String? photoBase64,
     int? setPoint,
     bool deletePhoto = false,
+    String role = 'user',
   }) async {
     final Map<String, dynamic> data = {
       'id': userId,
       'email': email,
       'name': name,
       'location': location,
-      //'tradePoints': 100,
+      'role': role,
       'updatedAt': FieldValue.serverTimestamp(),
     };
 
@@ -44,6 +45,20 @@ class AuthRepository {
         .collection('users')
         .doc(userId)
         .set(data, SetOptions(merge: true));
+  }
+
+  Future<String> getUserRole(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        return data['role'] as String? ?? 'user';
+      } else {
+        return 'user';
+      }
+    } catch (e) {
+      throw Exception("Kullanıcı rolü alınamadı: $e");
+    }
   }
 
   Future<Map<String, dynamic>?> getUserData(String userId) async {

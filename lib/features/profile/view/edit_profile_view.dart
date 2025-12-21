@@ -144,19 +144,17 @@ class _EditProfileViewState extends State<EditProfileView> {
     }
   }
 
-  // lib/features/profile/view/edit_profile_view.dart
-
   Future<void> _findLocation() async {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Şehri Getirmeye Çalış
+      // Şehri Getirmeye Çalış
       final city = await LocationHelper.getCurrentLocation();
 
       if (city != null) {
         if (!mounted) return;
 
-        // 2. Bulursa Diyalog Aç
+        // Bulursa Diyalog Aç
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -174,7 +172,7 @@ class _EditProfileViewState extends State<EditProfileView> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // 3. Güncelleme İşlemi
+                  // Güncelleme İşlemi
                   setState(() {
                     _locationController.text = city;
                     // Autocomplete widget'ını yenilemek için key değiştiriyoruz
@@ -202,13 +200,13 @@ class _EditProfileViewState extends State<EditProfileView> {
         );
       }
     } catch (e) {
-      // 🚨 HATAYI BURADA GÖRECEĞİZ
+      // HATAYI BURADA GÖRECEĞİZ
       print("KONUM HATASI: $e"); // Konsola yazdır
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Hata: $e"), // Ekrana yazdır
+          content: Text("Hata: $e"),
           backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5), // Okuyabilmen için uzun kalsın
+          duration: const Duration(seconds: 5),
         ),
       );
     } finally {

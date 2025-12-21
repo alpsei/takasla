@@ -1,5 +1,3 @@
-// lib/features/profile/view/profile_view.dart
-
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -71,8 +69,7 @@ class ProfileView extends StatelessWidget {
 
       body: CustomScrollView(
         slivers: [
-          // 1. BÖLÜM: PROFİL KARTI (StreamBuilder)
-          // Burası sadece başlık ve bilgileri içerir. Listeyi içermez!
+          //PROFİL KARTI
           SliverToBoxAdapter(
             child: StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
@@ -227,8 +224,7 @@ class ProfileView extends StatelessWidget {
             ),
           ),
 
-          // 2. BÖLÜM: KİTAP LİSTESİ (BlocBuilder -> SliverList)
-          // Burası ARTIK SliverToBoxAdapter'ın DIŞINDA ve ÖZGÜR!
+          // KİTAP LİSTESİ
           BlocBuilder<ProfileBloc, ProfileState>(
             builder: (context, state) {
               if (state is ProfileLoading) {
@@ -256,8 +252,6 @@ class ProfileView extends StatelessWidget {
                     ),
                   );
                 }
-
-                // 🔥 DOĞRU KULLANIM: SliverList 🔥
                 return SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final book = state.userBooks[index];
@@ -265,7 +259,6 @@ class ProfileView extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: BookCard(
                         book: book,
-                        // Kendi profilim olduğu için fotoyu tekrar yüklemeye gerek yok (veya null geçebiliriz)
                         onTap: () async {
                           final result = await Navigator.push(
                             context,

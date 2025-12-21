@@ -1,5 +1,3 @@
-// lib/features/home/view/widgets/book_card.dart
-
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -10,16 +8,13 @@ import '../../../../data/models/book_model.dart';
 class BookCard extends StatelessWidget {
   final BookModel book;
   final VoidCallback onTap;
-
-  // 👇 YENİ PARAMETRE (Opsiyonel)
-  // Eğer bu dolu gelirse veritabanına gitmeyiz, direkt bunu kullanırız.
   final String? ownerPhotoUrl;
 
   const BookCard({
     super.key,
     required this.book,
     required this.onTap,
-    this.ownerPhotoUrl, // 👈 Constructor'a ekle
+    this.ownerPhotoUrl,
   });
 
   @override
@@ -87,12 +82,10 @@ class BookCard extends StatelessWidget {
           // --- ALT KISIM ---
           Row(
             children: [
-              // 👇 PROFİL FOTOĞRAFI (GÜNCELLENDİ) 👇
-              // Eğer dışarıdan fotoğraf verildiyse onu kullan, yoksa veritabanından çek (Ana sayfa için)
+              // Eğer dışarıdan fotoğraf verildiyse onu kullan, yoksa veritabanından çek
               ownerPhotoUrl != null
-                  ? _buildAvatar(ownerPhotoUrl) // Hazır veri
+                  ? _buildAvatar(ownerPhotoUrl)
                   : FutureBuilder<DocumentSnapshot>(
-                      // Yoksa mecbur çekeceğiz
                       future: FirebaseFirestore.instance
                           .collection('users')
                           .doc(book.ownerId)
@@ -144,7 +137,6 @@ class BookCard extends StatelessWidget {
     );
   }
 
-  // 👇 AVATAR ÇİZEN YARDIMCI METOD
   Widget _buildAvatar(String? photoData) {
     return CircleAvatar(
       radius: 14,
@@ -161,8 +153,6 @@ class BookCard extends StatelessWidget {
     );
   }
 
-  // ... (Diğer metodlar: _buildBookImage, _buildTag aynı kalsın) ...
-  // _buildBookImage kodunu silme, o lazım!
   Widget _buildBookImage() {
     if (book.pdfBase64 != null && book.pdfBase64!.isNotEmpty) {
       return Container(
@@ -212,7 +202,6 @@ class BookCard extends StatelessWidget {
   }
 
   Widget _buildTag(BookModel book) {
-    // ... (Eski kodun aynısı) ...
     String text = "Diğer";
     Color bg = Colors.grey.shade200;
     Color txt = Colors.grey.shade800;
@@ -244,9 +233,8 @@ class BookCard extends StatelessWidget {
 
   String _getCityOnly(String fullLocation) {
     if (fullLocation.contains(',')) {
-      // "Çankaya, Ankara" -> ["Çankaya", " Ankara"] -> " Ankara" -> "Ankara"
       return fullLocation.split(',').last.trim();
     }
-    return fullLocation; // Virgül yoksa olduğu gibi göster
+    return fullLocation;
   }
 }

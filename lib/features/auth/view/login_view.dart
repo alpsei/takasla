@@ -1,5 +1,3 @@
-// lib/features/auth/view/login_view.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,15 +5,12 @@ import 'package:gap/gap.dart';
 import 'package:kitaptakas/features/auth/view/complete_profile_view.dart';
 import 'package:kitaptakas/features/auth/view/forgot_password.dart';
 import '../../../../core/constants/app_colors.dart';
-// Repoyu import etmeye gerek kalmadı çünkü BlocProvider sildik
 import '../../home/view/home_view.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
-// 👇 SARMALAYICIYI SİLDİK! ARTIK DİREKT STATEFUL WIDGET'I KULLANIYORUZ.
 class LoginPage extends StatefulWidget {
-  // İsmi 'LoginView' idi, 'LoginPage' yaptık
   const LoginPage({super.key});
 
   @override
@@ -42,7 +37,6 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      // BlocConsumer artık main.dart'taki ana BLoC'u kullanacak
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) async {
           if (state is AuthFailure) {

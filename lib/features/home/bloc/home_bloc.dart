@@ -15,7 +15,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }) : _bookRepository = bookRepository,
        _authRepository = authRepository,
        super(HomeInitial()) {
-    // 1. Kitapları Getir
+    // Kitapları Getir
     on<HomeBooksRequested>((event, emit) async {
       emit(HomeLoading());
       try {
@@ -27,7 +27,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
-    // 2. Arama Yap
+    // Arama Yap
     on<HomeSearchQueryChanged>((event, emit) async {
       if (state is HomeSuccess) {
         final currentState = state as HomeSuccess;
@@ -52,7 +52,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             emit((state as HomeSuccess).copyWith(userResults: []));
           }
         }
-        // B. Eğer Kitap Arıyorsak (Sync - Filtreleme)
+        // Eğer Kitap Arıyorsak (Sync - Filtreleme)
         else {
           final newState = currentState.copyWith(
             activeSearchQuery: event.query,
@@ -65,8 +65,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       if (state is HomeSuccess) {
         final currentState = state as HomeSuccess;
 
-        // 1. Önce geçmek istediğimiz YENİ durumu bir değişkene hazırlayalım
-        // (Burada isUserSearchMode güncelleniyor)
+        // Önce geçmek istediğimiz YENİ durumu bir değişkene hazırlayalım
         final targetState = currentState.copyWith(
           isUserSearchMode: event.isUserSearch,
           userResults: [],
@@ -78,31 +77,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(targetState);
         } else {
           // B. Kitap Moduna dönüyorsak
-          // 🔥 HATA BURADAYDI: Eskiden 'currentState' gönderiyorduk, şimdi 'targetState' gönderiyoruz.
-          // Böylece _applyFilters fonksiyonu "Ha, biz kitap modundaymışız" diyebiliyor.
           _applyFilters(emit, targetState);
         }
       }
     });
 
-    // 3. Filtreleme Yap
+    // Filtreleme Yap
     on<HomeFilterChanged>((event, emit) {
       final currentState = state;
       if (currentState is HomeSuccess) {
-        // Gelen filtre null değilse güncelle, null ise (yani temizlenmişse) null yap
-        // Ancak Event içindeki değer null ise ve biz onu değiştirmek istemiyorsak eski değeri korumalıyız.
-        // Buradaki mantık: Event'ten gelen değer varsa onu kullan, yoksa eskisini kullan.
-        // AMA: Filtreyi temizlemek için null gönderebiliriz. Bu yüzden event yapısını kontrol etmemiz lazım.
-
-        // Basit çözüm: Event'teki her alanı kontrol edip state'i güncelliyoruz.
-        // Not: HomeFilterChanged event'ini çağıran yer sadece değişeni göndermeli.
-
         HomeSuccess newState = currentState;
 
         if (event.takasTuru != null) {
-          // "Temizle" için boş string veya özel bir değer kullanabiliriz ama şimdilik null gelirse değiştirme mantığı kuralım.
-          // Eğer UI tarafında "Hepsi" seçeneği olursa burayı ona göre ayarlarız.
-          // Şimdilik: Eğer event.takasTuru geldiyse state'i güncelle.
           newState = newState.copyWith(activeTakasTuru: event.takasTuru);
         }
         if (event.kitapTuru != null) {
@@ -136,7 +122,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   void _applyFilters(Emitter<HomeState> emit, HomeSuccess currentState) {
     var filteredList = currentState.allBooks;
 
-    // 1. Arama Filtresi
+    // Arama Filtresi
     if (currentState.activeSearchQuery != null &&
         currentState.activeSearchQuery!.isNotEmpty) {
       final query = currentState.activeSearchQuery!.toLowerCase();
@@ -146,7 +132,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }).toList();
     }
 
-    // 2. Takas Türü
+    // Takas Türü
     if (currentState.activeTakasTuru != null) {
       final type = currentState.activeTakasTuru;
       if (type == 'Bağış')
@@ -157,7 +143,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         filteredList = filteredList.where((b) => b.isLoan).toList();
     }
 
-    // 3. Kitap Türü (Kategori)
+    // Kitap Türü (Kategori)
     if (currentState.activeKitapTuru != null) {
       final cat = currentState.activeKitapTuru!;
       final subCategories = AppConstants.getSubCategories(cat);
@@ -171,7 +157,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     }
 
-    // 4. Konum
+    // Konum
     if (currentState.activeKonum != null) {
       filteredList = filteredList
           .where((b) => b.location.contains(currentState.activeKonum!))

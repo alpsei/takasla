@@ -8,7 +8,7 @@ import '../../../../data/models/message_model.dart';
 import '../bloc/chat_bloc.dart';
 import '../bloc/chat_event.dart';
 
-// 1. SARMALAYICI (Provider)
+// SARMALAYICI
 class ChatPage extends StatelessWidget {
   final String requestId;
   final String chatTitle; // Kitap adı veya Kişi adı
@@ -24,7 +24,7 @@ class ChatPage extends StatelessWidget {
   }
 }
 
-// 2. GÖRÜNÜM
+// GÖRÜNÜM
 class ChatView extends StatefulWidget {
   final String requestId;
   final String chatTitle;
@@ -43,10 +43,10 @@ class _ChatViewState extends State<ChatView> {
   @override
   Widget build(BuildContext context) {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    final chatRepo = ChatRepository(); // Stream için direkt repo kullanıyoruz
+    final chatRepo = ChatRepository();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFE7DE), // WhatsApp tarzı bej arka plan
+      backgroundColor: const Color(0xFFEFE7DE),
       appBar: AppBar(
         title: Text(widget.chatTitle),
         backgroundColor: AppColors.primary,
@@ -54,7 +54,7 @@ class _ChatViewState extends State<ChatView> {
       ),
       body: Column(
         children: [
-          // --- MESAJ LİSTESİ (CANLI AKIŞ) ---
+          // --- MESAJ LİSTESİ ---
           Expanded(
             child: StreamBuilder<List<MessageModel>>(
               stream: chatRepo.getMessages(widget.requestId),
@@ -97,9 +97,7 @@ class _ChatViewState extends State<ChatView> {
                           maxWidth: MediaQuery.of(context).size.width * 0.75,
                         ),
                         decoration: BoxDecoration(
-                          color: isMe
-                              ? const Color(0xFFDCF8C6)
-                              : Colors.white, // Ben: Yeşilimsi, O: Beyaz
+                          color: isMe ? const Color(0xFFDCF8C6) : Colors.white,
                           borderRadius: BorderRadius.only(
                             topLeft: const Radius.circular(12),
                             topRight: const Radius.circular(12),

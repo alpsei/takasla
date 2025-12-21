@@ -10,7 +10,6 @@ class AddBookBloc extends Bloc<AddBookEvent, AddBookState> {
   AddBookBloc({required BookRepository bookRepository})
     : _bookRepository = bookRepository,
       super(AddBookInitial()) {
-    // Olay geldiğinde ne yapacağını tanımla:
     on<AddBookSubmitted>(_onSubmitted);
   }
 
@@ -37,10 +36,10 @@ class AddBookBloc extends Bloc<AddBookEvent, AddBookState> {
         pdfFile: event.pdfFile,
       );
 
-      // 3. Başarılı durumuna geç
+      // Başarılı durumuna geç
       emit(AddBookSuccess());
     } catch (e) {
-      // 4. Hata durumuna geç
+      // Hata durumuna geç
       emit(AddBookFailure(e.toString()));
     }
   }
