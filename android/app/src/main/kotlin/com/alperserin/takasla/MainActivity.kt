@@ -1,4 +1,4 @@
-package com.example.kitaptakas
+package com.alperserin.takasla
 
 import io.flutter.embedding.android.FlutterActivity
 
