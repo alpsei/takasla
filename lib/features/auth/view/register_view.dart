@@ -1,10 +1,9 @@
-import 'package:email_otp/email_otp.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:kitaptakas/features/auth/view/complete_profile_view.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../home/view/home_view.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -22,10 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
 
-  bool _isOptLoading = false;
-
-  // OTP Gönderme Fonksiyonu
-  Future<void> _sendOtp() async {
+  void _register() {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       _showError(context, "Lütfen tüm alanları doldurun.");
       return;
@@ -39,122 +35,64 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
     FocusScope.of(context).unfocus();
-    setState(() => _isOptLoading = true);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Doğrulama kodu gönderiliyor...")),
+    context.read<AuthBloc>().add(
+      AuthRegisterRequested(
+        email: _emailController.text,
+        password: _passwordController.text,
+      ),
     );
-
-    try {
-      EmailOTP.config(
-        appName: 'Takasla',
-        otpType: OTPType.numeric,
-        emailTheme: EmailTheme.v1,
-        otpLength: 6,
-      );
-      EmailOTP.setTemplate(
-        template: '''
-          <div style="background-color: #f5f5f5; padding: 20px; font-family: sans-serif;">
-            <div style="max-width: 500px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-              
-              <h2 style="color: #2979FF; text-align: center;">{{appName}}'ya Hoş Geldin! 🚀</h2>
-              
-              <p style="font-size: 16px; color: #333;">Merhaba,</p>
-              <p style="font-size: 16px; color: #333;">Hesabını doğrulamak için aşağıdaki kodu kullanabilirsin:</p>
-              
-              <div style="background-color: #e3f2fd; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;">
-                <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1565c0;">{{otp}}</span>
-              </div>
-
-              <p style="font-size: 14px; color: #666;">Bu kod güvenlik nedeniyle 5 dakika içinde geçerliliğini yitirecektir.</p>
-              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-              <p style="font-size: 12px; color: #999; text-align: center;">Bu maili sen talep etmediysen lütfen dikkate alma.</p>
-            </div>
-          </div>
-        ''',
-      );
-      bool result = await EmailOTP.sendOTP(email: _emailController.text.trim());
-
-      if (mounted) setState(() => _isOptLoading = false);
-
-      if (result) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Kod gönderildi! Mail kutunu kontrol et."),
-              backgroundColor: Colors.green,
-            ),
-          );
-          _showOtpDialog();
-        }
-      } else {
-        _showError(context, "Kod gönderilemedi. Mail adresini kontrol et.");
-      }
-    } catch (e) {
-      if (mounted) setState(() => _isOptLoading = false);
-      _showError(context, "Hata: $e");
-    }
   }
 
-  // OTP Giriş Penceresi
-  void _showOtpDialog() {
-    final TextEditingController _otpController = TextEditingController();
-
-    showDialog(
+  Future<void> _showEmailVerificationDialog() async {
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Doğrulama Kodu"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("Mail adresine gelen 6 haneli kodu girin:"),
-              const Gap(10),
-              TextField(
-                controller: _otpController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 24,
-                  letterSpacing: 8,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: const InputDecoration(
-                  counterText: "",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
+          title: const Text("E-posta Doğrulama"),
+          content: const Text(
+            "Devam edebilmek için e-posta adresini doğrulaman gerekiyor. Lütfen mailini kontrol et.",
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("İptal", style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                await FirebaseAuth.instance.currentUser
+                    ?.sendEmailVerification();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Doğrulama maili gönderildi. Lütfen mailini kontrol et.",
+                    ),
+                  ),
+                );
+              },
+              child: const Text("Tekrar Gönder"),
             ),
             ElevatedButton(
-              onPressed: () {
-                bool isValid = EmailOTP.verifyOTP(otp: _otpController.text);
-                if (isValid) {
+              onPressed: () async {
+                await FirebaseAuth.instance.currentUser?.reload();
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null && user.emailVerified) {
+                  if (!mounted) return;
                   Navigator.pop(context);
-                  // Doğrulama başarılı, kayıt işlemini başlat
-                  context.read<AuthBloc>().add(
-                    AuthRegisterRequested(
-                      email: _emailController.text,
-                      password: _passwordController.text,
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CompleteProfileView(),
                     ),
+                    (route) => false,
                   );
                 } else {
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text("Hatalı kod! Tekrar dene."),
-                      backgroundColor: Colors.red,
+                      content: Text("E-posta henüz doğrulanmadı."),
                     ),
                   );
                 }
               },
-              child: const Text("Onayla"),
+              child: const Text("Kontrol Et"),
             ),
           ],
         );
@@ -201,14 +139,18 @@ class _RegisterPageState extends State<RegisterPage> {
                 backgroundColor: Colors.green,
               ),
             );
-            // Kayıt başarılıysa Profil Tamamlama sayfasına yönlendir
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CompleteProfileView(),
-              ),
-              (route) => false,
-            );
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null && user.emailVerified) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CompleteProfileView(),
+                ),
+                (route) => false,
+              );
+            } else {
+              _showEmailVerificationDialog();
+            }
           }
         },
         builder: (context, state) {
@@ -283,9 +225,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: (state is AuthLoading || _isOptLoading)
-                        ? null
-                        : _sendOtp,
+                    onPressed: state is AuthLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
@@ -293,7 +233,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       elevation: 2,
                     ),
-                    child: (state is AuthLoading || _isOptLoading)
+                    child: state is AuthLoading
                         ? const SizedBox(
                             width: 24,
                             height: 24,

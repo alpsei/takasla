@@ -104,6 +104,10 @@ class AuthRepository {
         email: email,
         password: password,
       );
+      if (userCredential.user != null && !userCredential.user!.emailVerified) {
+        await userCredential.user!.sendEmailVerification();
+      }
+
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
