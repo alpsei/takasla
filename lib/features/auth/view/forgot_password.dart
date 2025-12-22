@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -28,6 +30,30 @@ class ForgotPasswordView extends StatefulWidget {
 
 class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   final _emailController = TextEditingController();
+  Timer? _cooldownTimer;
+  int _cooldownSeconds = 0;
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _startCooldown() {
+    setState(() => _cooldownSeconds = 30);
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_cooldownSeconds <= 1) {
+        timer.cancel();
+        if (!mounted) return;
+        setState(() => _cooldownSeconds = 0);
+        return;
+      }
+      if (!mounted) return;
+      setState(() => _cooldownSeconds -= 1);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,19 +122,37 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: state is AuthLoading
+                    onPressed: (state is AuthLoading || _cooldownSeconds > 0)
                         ? null
                         : () {
-                            if (_emailController.text.isEmpty) return;
+                            final user =
+                                FirebaseAuth.instance.currentUser;
+                            if (user != null && !user.emailVerified) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Şifre sıfırlamak için önce e-posta adresini doğrulamalısın.",
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                            final email = _emailController.text.trim();
+                            if (email.isEmpty) return;
                             context.read<AuthBloc>().add(
                               AuthResetPasswordRequested(
-                                _emailController.text.trim(),
+                                email,
                               ),
                             );
+                            _startCooldown();
                           },
                     child: state is AuthLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Bağlantı Gönder"),
+                        : Text(
+                            _cooldownSeconds > 0
+                                ? "Tekrar gönder (${_cooldownSeconds}sn)"
+                                : "Bağlantı Gönder",
+                          ),
                   ),
                 ),
               ],
