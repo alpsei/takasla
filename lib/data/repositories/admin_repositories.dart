@@ -13,6 +13,25 @@ class AdminRepository {
     return aggregateQuery.count ?? 0;
   }
 
+  Future<int> getReportCount() async {
+    final aggregateQuery = await _firestore.collection('reports').count().get();
+    return aggregateQuery.count ?? 0;
+  }
+
+  Future<Map<String, int>> getDashboardStats() async {
+    final results = await Future.wait([
+      getUserCount(),
+      getBookCount(),
+      getReportCount(),
+    ]);
+
+    return {
+      'userCount': results[0],
+      'bookCount': results[1],
+      'reportCount': results[2],
+    };
+  }
+
   Future<QuerySnapshot> getAllUsers() async {
     return await _firestore.collection('users').get();
   }

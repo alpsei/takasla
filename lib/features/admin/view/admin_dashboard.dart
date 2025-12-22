@@ -18,7 +18,7 @@ class AdminDashboardScreen extends StatelessWidget {
       create: (context) =>
           AdminDashboardBloc(AdminRepository())..add(LoadDashboardStats()),
       child: Scaffold(
-        backgroundColor: Colors.white, // Uygulamanın genel arka planı beyaz/gri
+        backgroundColor: Colors.white,
         appBar: AppBar(
           title: const Text(
             "Yönetici Paneli",
@@ -27,16 +27,13 @@ class AdminDashboardScreen extends StatelessWidget {
           centerTitle: true,
           backgroundColor: Colors.white,
           elevation: 0,
-          iconTheme: const IconThemeData(
-            color: Colors.black,
-          ), // Geri butonu siyah
+          iconTheme: const IconThemeData(color: Colors.black),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hoş geldin metni
               const Text(
                 "Genel Bakış",
                 style: TextStyle(
@@ -47,13 +44,49 @@ class AdminDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // İçerik Grid Yapısı
+              // Grid Yapısı ve State Yönetimi
               Expanded(
                 child: BlocBuilder<AdminDashboardBloc, AdminDashboardState>(
                   builder: (context, state) {
-                    String userCount = "...";
-                    String bookCount = "...";
-                    String reportCount = "0"; // Varsayılan
+                    // YÜKLENİYOR
+                    if (state is AdminDashboardLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    // HATA VARSA
+                    if (state is AdminDashboardError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "İstatistikler alınamadı:\n${state.message}",
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
+                                context.read<AdminDashboardBloc>().add(
+                                  LoadDashboardStats(),
+                                );
+                              },
+                              child: const Text("Tekrar Dene"),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    // 3. VERİLER GELDİYSE (Loaded)
+                    String userCount = "0";
+                    String bookCount = "0";
+                    String reportCount = "0";
 
                     if (state is AdminDashboardLoaded) {
                       userCount = state.userCount.toString();
@@ -62,10 +95,10 @@ class AdminDashboardScreen extends StatelessWidget {
                     }
 
                     return GridView.count(
-                      crossAxisCount: 2, // Yan yana 2 kutu
+                      crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 1.0, // Kareye yakın oran
+                      childAspectRatio: 1.0,
                       children: [
                         // KULLANICILAR KARTI
                         _buildSimpleCard(
@@ -111,6 +144,7 @@ class AdminDashboardScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+
                         // ÇIKIŞ KARTI
                         _buildSimpleCard(
                           context,
@@ -120,16 +154,13 @@ class AdminDashboardScreen extends StatelessWidget {
                           themeColor: Colors.grey,
                           isLogout: true,
                           onTap: () {
-                            // AuthBloc'a çıkış emrini ver
                             context.read<AuthBloc>().add(AuthLogoutRequested());
-
-                            // Tüm geçmiş sayfaları sil ve Karşılama Ekranına git
                             Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const WelcomeView(),
                               ),
-                              (route) => false, // Geri tuşunu iptal et
+                              (route) => false,
                             );
                           },
                         ),
@@ -161,10 +192,7 @@ class AdminDashboardScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: themeColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: themeColor.withOpacity(0.2), // Hafif çerçeve
-            width: 1,
-          ),
+          border: Border.all(color: themeColor.withOpacity(0.2), width: 1),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -195,7 +223,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: themeColor, // Sayı tema renginde
+                  color: themeColor,
                 ),
               ),
               const SizedBox(height: 4),
