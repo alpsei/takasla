@@ -126,9 +126,9 @@ GoogleService-Info.plist
 (IOS) dosyalarınızı ilgili klasörlere ekleyin.
 
 ### 4. API Anahtarları
-- '''text
+```text
 .env
-'''
+```
 dosyanızı oluşturun ve Google Gemini API anahtarınızı ekleyin:
 ```bash
 GEMINI_API_KEY=API_ANAHTARINIZ
