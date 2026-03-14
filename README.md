@@ -106,7 +106,7 @@ Proje, **Clean Architecture** prensiplerine uygun olarak geliştirilmiştir.
 
 ### 1 Projeyi Klonlayın
 ```bash
-git clone https://github.com/alpsei/takasla-app.git
+git clone https://github.com/alpsei/takasla.git
 cd takasla
 ```
 ### 2 Bağımlılıkları Yükleyin
